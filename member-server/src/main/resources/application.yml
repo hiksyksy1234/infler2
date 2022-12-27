@@ -1,0 +1,57 @@
+server:
+  port: 0
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: member-service
+#  datasource: 
+#    driver-class-name: oracle.jdbc.OracleDriver
+#    url: jdbc:oracle:thin:@localhost:1521/xe
+#    username: scott
+#    password: tiger
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+    
+        
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-regisry: true
+    service-url.defaultZone: http://127.0.0.1:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${server.port}
+
+
+
+#Model Location
+mybatis:
+  type-aliases-package: com.naver.myhome4.domain
+  config-location: classpath:/com/naver/myhome4/mybatis/config/mybatis-config.xml
+  mapper-locations: classpath:/com/naver/myhome4/mybatis/mapper/*.xml
+
+
+# mapper log print
+logging:
+  level:
+    root: info
+    com:
+      naver:
+        myhome4:
+          mybatis:
+            mapper:
+              MemberMapper: trace
+
+
+#token:
+#  secret: access_token
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health, beans, info, busrefresh
