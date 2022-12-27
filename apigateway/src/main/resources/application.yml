@@ -1,0 +1,91 @@
+server:
+  port: 8000
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${server.port}
+    
+spring:
+  application:
+    name: gateway-service
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest  
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: '*'
+            allowedMethods:
+              - POST
+              - GET
+              - PUT
+              - OPTIONS
+              - DELETE
+              - PATCH
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+            
+      routes:
+        - id: front-service
+#          uri: lb://FRONT-SERVICE
+          uri: lb://JSP-FRONT-SERVICE  
+          predicates:
+#            - Path=/vue/** 
+             - Path=/jsp/** 
+          filters:
+#            - RewritePath=/vue/(?<segment>.*), /$\{segment}
+             - RewritePath=/jsp/(?<segment>.*), /$\{segment}
+            
+        - id: member-service
+          #uri: http://localhost:8081
+          uri: lb://MEMBER-SERVICE
+          predicates:
+            - Path=/user/**
+#           - Method=POST, GET
+          filters:
+#            - AddRequestHeader=first-request, first-request-header2
+#            - AddResponseHeader=first-response, first-response-header2
+            - CustomFilter
+            - RewritePath=/user/(?<segment>.*), /$\{segment}
+            
+        - id: board-service
+          #uri: http://localhost:8082
+          uri: lb://BOARD-SERVICE
+          predicates:         
+            - Path=/board/**   
+            - Method=POST,GET,PATCH,DELETE,PUT
+          filters:
+#            - AddRequestHeader=second-request, second-request-header2
+#            - AddResponseHeader=second-response, second-response-header2
+#            - CustomFilter
+            - RewritePath=/board/(?<segment>.*), /$\{segment}
+            - AthorizationHeaderFilter
+        
+        - id: comment-service
+          uri: lb://COMMENT-SERVICE
+          predicates:         
+            - Path=/comment/**   
+            - Method=POST,GET,PATCH,DELETE,PUT
+          filters:            
+            - RewritePath=/comment/(?<segment>.*), /$\{segment}           
+#token:
+#  secret: access_token
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health, beans, httptrace, busrefresh
