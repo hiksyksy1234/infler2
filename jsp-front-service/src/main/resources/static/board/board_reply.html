@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../resources/css/bootstrap.css">
+	<link rel="stylesheet" href="../../resources/css/header.css">
+	<script src="../../resources/js/jquery-3.6.0.js"></script>
+	<script src="../../resources/js/header.js" charset="UTF-8"></script>
+	<script src="../../resources/js/popper.js"></script>
+	<script src="../../resources/js/bootstrap.js"></script>
+	<style>
+	 h1{font-size:1.5rem; text-align:center; color:#1a92b9}
+	 .container{width:60%}
+	 label{font-weight:bold}
+	 #upfile{display:none} 
+     img{width:20px;}
+     textarea{resize:none}
+	</style>
+		
+</head>
+<body>
+
+<div class="container">
+<form>
+    <h1>MVC 게시판-reply 페이지</h1>
+    <div class="form-group">
+       <label for="board_name">글쓴이</label>
+       <input name="BOARD_NAME" id="board_name"  
+              readOnly
+		      type="text" size="10" maxlength="30"
+		      class="form-control"  
+		      placeholder="Enter board_name"
+		      required>
+    </div>
+    <div class="form-group">
+      <label for="board_pass">비밀번호</label>	
+	  <input name="BOARD_PASS" id="board_pass" 
+			 type="password" size="10" maxlength="30" 
+			 class="form-control" placeholder="Enter board_pass"
+			 required>
+    </div>
+    <div class="form-group">
+     <label for="board_subject">제목</label>	
+	 <input name="BOARD_SUBJECT" id="board_subject" 
+		    type="text" size="50" maxlength="100" 
+		    class="form-control" placeholder="Enter board_subject" required>
+    </div>
+    <div class="form-group">
+	  <label for="board_content">내용</label>	
+	  <textarea name="BOARD_CONTENT" id="board_content" 
+		        cols="67" rows="10"  class="form-control" required></textarea>
+    </div>
+    
+    <div class="form-group">	
+	  <button type=submit class="btn btn-primary">등록</button>
+	  <button type=reset  class="btn btn-danger">취소</button>
+   </div>
+  </form>
+  </div>
+  
+  <script>
+  
+  //글번호에 해당하는 것을 불러옵니다.
+  //http://localhost:8000/jsp/board/11/reply 중에서 
+  console.log(location.pathname) // =>   /jsp/board/11/reply
+  let arr=location.pathname.split('/')
+  const num = arr[arr.length-2];
+  console.log(num);
+  
+  const token=localStorage.getItem('user-token');
+  let board_re_ref=0;
+  let board_re_lev=0;
+  let board_re_seq=0;
+  $.ajax({
+     url: '/board/boards/' + num,
+     async:false,
+     beforeSend : function(xhr)
+       {   //데이터를 전송하기 전에 헤더에 csrf값을 설정합니다.
+       	xhr.setRequestHeader("authorization", token);			
+       },
+     success:function(returnData){
+          $('#board_name' ).text(returnData.board.board_NAME);
+          $('#board_subject' ).val(returnData.board.board_SUBJECT);
+          $('#board_content' ).val(returnData.board.board_CONTENT);
+          board_re_ref=returnData.board.board_RE_REF;
+          board_re_lev=returnData.board.board_RE_LEV;
+          board_re_seq=returnData.board.board_RE_SEQ;
+     }
+  
+  })
+
+  
+  //답변 처리를 위해 FormData 객체를 생성합니다.
+		     const formData = new FormData();
+		     
+		     
+		  $('form').submit(function(event){
+			  event.preventDefault();
+			  formData.append('BOARD_NAME', $('#board_name').val())
+			  formData.append('BOARD_PASS', $('#board_pass').val())
+			  formData.append('BOARD_CONTENT', $('#board_content').val())
+			  formData.append('BOARD_SUBJECT', $('#board_subject').val())
+			  formData.append('BOARD_RE_LEV', board_re_lev)
+			  formData.append('BOARD_RE_SEQ', board_re_seq)
+			  formData.append('BOARD_RE_REF', board_re_ref)
+			  const token=localStorage.getItem('user-token');
+			  $.ajax({
+				  url:'/board/boards/reply/new',
+				  method:'post',
+				  data: formData,
+				  processData: false,
+				  contentType:false,
+			      beforeSend : function(xhr)
+			        {   //데이터를 전송하기 전에 헤더에 csrf값을 설정합니다.
+			        	xhr.setRequestHeader("authorization", token);			
+			        },
+				  success: function(res){
+					  if(res=='success')
+						  location.href='/jsp/board/list'
+				  }
+				  
+				  
+			  })//ajax end
+		  })// form end   
+		     
+	</script>
+ </body>
+</html>

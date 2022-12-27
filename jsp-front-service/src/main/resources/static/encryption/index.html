@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="../resources/css/bootstrap.css">
+<script src="../resources/js/jquery-3.6.0.js"></script>
+</head>
+<body>
+
+<div class="container mt-3" >
+ <input type="text">
+ <button class='encryption btn btn-info'>암호화</button>
+ <div id="encryption"></div>
+</div>
+
+<div class="container mt-3" >
+ <input type="text">
+ <button class='decryption btn btn-warning'>복호화</button>
+ <div id="decryption"></div>
+</div>
+
+
+ <script>
+ //http://localhost:8000/jsp/encryption/index.html로 접속
+ $('.encryption').click(function(){
+   $.ajax({
+	 url:'http://127.0.0.1:8888/encrypt',
+	 method:'post',
+	 data: $('input').val(),
+	 success:function(data){
+		 console.log('http://127.0.0.1:8888/encrypt')
+		 console.log(data)
+		 $('.decryption').prev().val(data);
+		 if(data.length==0){
+			 $('#encryption').text('정보가 없습니다.');
+		 }else{
+		   $('#encryption').text(data);
+		 }
+	 }
+   })
+ })
+ 
+ 
+ $('.decryption').click(function(){
+   $.ajax({
+	 url:'http://127.0.0.1:8888/decrypt',
+	 method:'post',
+	 data: $('#encryption').text(),
+	 success:function(data){
+		 console.log('http://127.0.0.1:8888/decrypt')
+		 console.log(data)
+		 if(data.length==0){
+			 $('#decryption').text('정보가 없습니다.');
+		 }else{
+		   $('#decryption').text(data);
+		 }
+	 }
+   })
+ })
+ 
+ </script>
+</body>
+</html>

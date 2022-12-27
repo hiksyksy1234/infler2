@@ -1,0 +1,179 @@
+<html>
+<head>
+<title>MVC 게시판 - view</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../resources/css/bootstrap.css">
+<link rel="stylesheet" href="../../resources/css/header.css">
+<script src="../../resources/js/jquery-3.6.0.js"></script>
+<script src="../../resources/js/header.js" charset="UTF-8"></script>
+<script src="../../resources/js/popper.js"></script>
+<script src="../../resources/js/bootstrap.js"></script>
+<script src="../../resources/js/view.js" charset="UTF-8"></script>
+<script>
+
+    
+	$(function() {
+		$("form[action=delete]").submit(function() {
+			if ($("#board_pass").val() == '') {
+				alert("비밀번호를 입력하세요");
+				$("#board_pass").focus();
+				return false;
+			}
+
+		})
+	})
+</script>
+<style>
+body > div > table > tbody >tr:nth-child(1) {
+	text-align: center
+}
+
+td:nth-child(1) {
+	width: 20%
+}
+
+a {
+	color: white
+}
+
+body > div > table > tbody tr:last-child {
+	text-align: center;
+}
+
+.btn-primary {
+	background-color: #4f97e5
+}
+
+#myModal {
+	display: none
+}
+
+#comment > table > tbody > tr > td:nth-child(2){
+ width:60%
+}
+#count{
+    position: relative;
+    top: -10px;
+    left: -10px;
+    background: orange;
+    color: white;
+    border-radius: 30%;
+}
+
+textarea{resize:none}
+
+img + form > input[type=submit]{
+    position: relative;
+    top: -20px;
+    left: 10px;
+    border: none;
+    cursor : pointer;
+}
+
+</style>
+
+
+</head>
+<body>
+ <div class="container">
+  <table class="table table-striped">
+	<tr>
+ 	    <th colspan="2">MVC 게시판-view페이지</th>
+	</tr>
+	<tr>
+	  <td>
+	    <div>글쓴이</div>
+	  </td>
+	  <td id='name'></td>
+	</tr>
+	<tr>
+	  <td>
+		<div>제목</div>
+	  </td>
+	  <td id='subject'></td>
+	</tr>
+    <tr>
+	  <td>
+		 <div>내용</div>
+	  </td>
+	  <td style="padding-right:0px"><textarea class="form-control"  rows="5"  readOnly id='detail_content'></textarea></td>
+	</tr>
+  
+	<tr>
+	  <td>
+		 <div>첨부파일</div>
+	  </td>
+	
+	  <td id='file'><img src="../../resources/image/down.png" width="10px"> 
+	      <form method="get"  style="height:0px">
+	        <input type="hidden" value=""    name="filename">
+	        <input type="hidden" value=""    name="original">
+		    <input type="submit" value="" >
+		  </form>	
+		</td>   
+	</tr>
+ 
+	<tr>
+		<td colspan="2" class="center">		
+			<button class="btn btn-primary">댓글</button>
+			 <span id="count"></span>
+			 
+			 <span class='update delete'>
+				 <a>
+					<button class="btn btn-warning">수정</button>
+				 </a>
+		 		 <a href="#"> 
+				   <button class="btn btn-danger" data-toggle="modal"	data-target="#myModal">삭제</button>
+				 </a>
+			 </span>
+			 
+			<a href="reply">
+				<button class="btn btn-info">답변</button>
+			</a>
+		
+			<a href="../list">
+				<button class="btn btn-success">목록</button>
+			</a>
+	</td>
+  </tr>
+ </table>
+		<div class="modal" id="myModal">
+		 <div class="modal-dialog">
+		  <div class="modal-content">
+		   <!-- Modal body -->
+			<div class="modal-body">
+		 	 <form name="deleteForm">
+				<div class="form-group">
+				 <label for="pwd">비밀번호</label> 
+				 <input type="password"
+					    class="form-control" placeholder="Enter password"
+					    name="BOARD_PASS" id="board_pass">
+				</div>
+				<button type="submit" class="btn btn-primary">전송</button>
+				<button type="button" class="btn btn-danger" 
+				        data-dismiss="modal">취소</button>
+			   </form>
+			 </div>
+			</div>
+		</div>
+	  </div>
+	
+	
+	<div id="comment">
+	   <button class="btn btn-info float-left">총 50자까지 가능합니다.</button>
+	   <button id="write" class="btn btn-info float-right">등록</button>
+	   <textarea rows=3  class="form-control"  
+	             id="content" maxLength="50" ></textarea>
+	   <table class="table table_striped">
+	     <thead>
+	       <tr><td>아이디</td><td>내용</td><td>날짜</td></tr>
+	     </thead>
+	     <tbody>
+	    
+	     </tbody>
+	   </table>
+	    <div id="message"></div>
+	</div>
+ </div>
+</body>
+</html>

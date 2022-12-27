@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="../resources/css/bootstrap.css">
+<link rel="stylesheet" href="../resources/css/header.css">
+<script src="../resources/js/jquery-3.6.0.js"></script>
+<script src="../resources/js/header.js" ></script>
+<script src="../resources/js/member_list.js"></script>
+<script src="../resources/js/popper.js"></script>
+<script src="../resources/js/bootstrap.js"></script>
+<title>회원관리 시스템 관리자모드(회원 목록 보기)</title>
+<style>
+table caption{caption-side:top;text-align:center  }
+ select.form-control{ width:auto;margin-bottom:2em;display:inline-block}
+.rows{text-align:right;}
+.center{text-align:center}
+form{margin:0 auto;width:80%; text-align:center}
+select{
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+ } 
+.container{width:60%}
+td:nth-child(1){width:10%}
+.input-group{margin-bottom:3em}
+ </style>
+</head>
+<body>
+<div class="container">
+   <div class="rows">
+      <span>줄보기</span>
+      <select class="form-control" id="limit">
+        <option value="1">1</option>
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="7">7</option>
+        <option value="10" selected>10</option>
+      </select>
+    </div>
+  <form>
+	<div class="input-group">
+	 <select id="viewcount" name="search_field" >
+	  <option value="I" selected>아이디</option>
+	  <option value="N">이름</option>
+	  <option value="A">나이</option>
+	  <option value="G">성별</option>
+	 </select>
+	 <input name="search_word" type="text" class="form-control" 
+	         placeholder="아이디를 입력하세요" value="">
+	 <button class="btn btn-primary" type="submit">검색</button>
+	</div>
+ </form>
+  <table class="table table-striped">
+	  <caption>회원 목록</caption>
+	  <thead>
+	  <tr>
+		<th  colspan="2">MVC 게시판 - 회원 정보 list</th>
+		<th>
+			<font size=3>회원 수 : </font>
+		</th>
+	  </tr> 
+		<tr>
+		  <td>아이디</td><td>이름</td><td>삭제</td>
+		</tr>
+	   </thead>	
+	   <tbody>
+	   </tbody>
+   </table>
+   <div class="center-block">
+		  <ul class="pagination justify-content-center">	
+		  </ul>
+	</div>	
+</div>
+</body>
+</html>
