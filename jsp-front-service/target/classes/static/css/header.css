@@ -1,0 +1,18 @@
+body > nav.navbar {
+	justify-content: flex-end; /* 오른쪽 정렬 */
+}
+
+.dropdown-menu {
+min-width: 0rem; 
+}
+
+/* nav 색상 지정 */
+.navbar {
+	background: #096988;
+	margin-bottom: 3em;
+	padding-right: 3em;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+	color: rgb(255, 255, 255);
+}

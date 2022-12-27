@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../resources/css/bootstrap.css">
+	<link rel="stylesheet" href="../../resources/css/header.css">
+	<script src="../../resources/js/jquery-3.6.0.js"></script>
+	<script src="../../resources/js/header.js" charset="UTF-8"></script>
+	<script src="../../resources/js/popper.js"></script>
+	<script src="../../resources/js/bootstrap.js"></script>
+	<style>
+.container {
+	width: 60%
+}
+
+h1 {
+	font-size: 1.5rem;
+	text-align: center;
+	color: #1a92b9;
+}
+#upfile{display:none} 
+textarea{resize:none}
+</style>
+		
+</head>
+<body>
+
+	<!-- 게시판 수정 -->
+	<div class="container">
+		<form  name="modifyform" >
+			<input type="hidden" name="BOARD_FILE" >
+			<h1>MVC 게시판 - 수정</h1>
+			<div class="form-group">
+				<label for="board_name">글쓴이</label> 
+				<input type="text"  name="BOARD_NAME" id="board_name"
+					class="form-control" value="" readOnly required>
+			</div>
+			<div class="form-group">
+				<label for="board_subject">제목</label> <textarea
+					name="BOARD_SUBJECT" id="board_subject" maxlength="100" rows="1"
+					class="form-control" required></textarea>
+			</div>
+			<div class="form-group">
+				<label for="board_content">내용</label>
+				<textarea name="BOARD_CONTENT" id="board_content"
+					class="form-control" rows="15" required></textarea>
+			</div>
+
+			 <div class="form-group read">
+	          <label for="board_file">파일 첨부</label>	
+	           <label for="upfile">
+	              <img src="../../resources/image/attach.png" alt="파일첨부" width="20px">
+	           </label> 
+             <input type="file" id="upfile" name="uploadfile" >
+	         <span id="filevalue"></span>
+	          <img src="../../resources/image/remove.png" alt="파일삭제" 
+	               width="10px" class="remove">
+            </div>
+
+			<div class="form-group">
+				<label for="board_pass">비밀번호</label> 
+				<input name="BOARD_PASS"
+					id="board_pass" type="password" size="10" maxlength="30"
+					class="form-control" placeholder="Enter board_pass" value="" required>
+			</div>
+			<div class="form-group">
+				<button type=submit class="btn btn-primary">수정</button>
+				<button type=reset class="btn btn-danger" onClick="history.go(-1)">취소</button>
+			</div>
+		</form>
+		<!-- 게시판 수정 -->
+	</div>
+  <script>
+  
+  //글번호에 해당하는 것을 불러옵니다.
+  //http://localhost:8000/jsp/board/16/edit 중에서 
+  console.log(location.pathname) // =>   /jsp/board/16/edit
+  let arr=location.pathname.split('/')
+  const num = arr[arr.length-2];
+  console.log(num);
+  
+  const token=localStorage.getItem('user-token');
+  //해당 글을 불러와서 화면에 보여줍니다.
+  $.ajax({
+     url: '/board/boards/' + num,
+     async:false,
+     beforeSend : function(xhr)
+       {   //데이터를 전송하기 전에 헤더에 csrf값을 설정합니다.
+       	xhr.setRequestHeader("authorization", token);			
+       },
+     success:function(returnData){
+          $('#board_name').text(returnData.board.board_NAME);
+          $('#board_subject').text(returnData.board.board_SUBJECT);
+          $('#board_content').text(returnData.board.board_CONTENT);
+          $('input[name=BOARD_FILE]').val(returnData.board.board_FILE);
+          if(returnData.board.board_RE_LEV > 0 ){ //답변인 경우 파일 부분은 제거 합니다.
+        	  $('.read').remove();
+          } else {  //원문글인 경우
+        	  //파일이 없는 경우
+	          if(returnData.board.board_FILE == null) {  //"board_FILE":null,"board_ORIGINAL":null 로 오는 경우
+	        	  $(".remove").css('display', 'none');
+	          }else{  //파일이 있는 경우 오리지널 이름을 보여줍니다.
+	        	  $('#filevalue').text(returnData.board.board_ORIGINAL);
+	          }        	  
+          }
+     }
+  
+  })//ajax end
+  
+  
+		     const formData = new FormData();
+		     let check=0;
+		     $('#upfile').change(function(event){
+		    	 check++;
+		    	 const file = event.target.files[0];
+		         formData.set('uploadfile', file)
+		         $('#filevalue').text(file.name);
+		     })
+		     
+		     /*
+		     https://wickedmagica.tistory.com/9
+		     ① 폼(form)의 값이 AJAX를 통해서 넘어가기 때문에 from에 enctype="multipart/form-data"를 꼭 필요로 하지 않는다.
+			② FormData : 해당 폼의 모든 값들(file포함)을 해당 객체에 한번에 담아 보내기 위해 사용된다. (※ ie10부터 사용가능)
+			③ processData
+			   -. 기본 값은 true이다.
+			   -. 해당 값이 true일때는 data 값들이 쿼리스트링 형태인 key1=value1&key2=value2 형태로 전달된다.
+			   -. 하지만 이렇게 하면 file 값들은 제대로 전달되지 못한다.
+			   -. 그래서 해당 값을 false로 해주어 { key1 : 'value1', key2 : 'value2' } 형태로 전달해 주어야 file 값들이 제대로 전달된다.
+			 ④ contentTyp
+			   -. 기본값은 'application/x-www-form-urlencoded'이다. 해당 기본 타입으로는 파일이 전송 안되기 때문에 false로 해주어야 한다.
+
+*/
+		     
+		  $('form').submit(function(event){
+			  event.preventDefault();
+			// 한번도 변경하지 않으면 $('#filevalue').text()의 파일명을 전송합니다.
+			//formData.append()를 사용하면 비밀번호 오류 시 다시 전송하게 되면
+			//이전 데이터에 추가로 중복 되어 전송됩니다. 이 때 set()로 해결합니다.
+				if (check == 0) {
+					formData.set('check', $('#filevalue').text());//오리지널 파일이름
+					formData.set('BOARD_FILE', $('input[name=BOARD_FILE]').val())
+				}
+			  
+			  formData.set('BOARD_NUM', num)
+			  formData.set('BOARD_NAME', $('#board_name').val())
+			  formData.set('BOARD_PASS', $('#board_pass').val())
+			  formData.set('BOARD_CONTENT', $('#board_content').val())
+			  formData.set('BOARD_SUBJECT', $('#board_subject').val())
+			  const token=localStorage.getItem('user-token');
+			  $.ajax({
+				  url:'/board/boards',
+				  method:'patch',
+				  data: formData,
+				  processData: false,
+				  contentType:false,
+			      beforeSend : function(xhr)
+			        {   //데이터를 전송하기 전에 헤더에 csrf값을 설정합니다.
+			        	xhr.setRequestHeader("authorization", token);			
+			        },
+				  success: function(res){
+					  if(res=='success')
+						  location.href='/jsp/board/' + num + '/detail';
+					  else if (res == 'Nopass'){
+						  alert('비밀번호를 확인하세요');
+					  }
+				  }
+			  })//ajax end
+		  })// form end   
+		     
+		  
+		// remove 이미지를 클릭하면 파일명을 ''로 변경하고 remove 이미지를 보이지 않게 합니다.
+			$(".remove").click(function() {
+				$('#filevalue').text('');
+				$(this).css('display', 'none');
+			})
+			
+			show();
+			function show() {
+				// 파일이름이 있는 경우 remove 이미지를 보이게 하고 없는 경우는 보이지 않게 합니다.
+				if ($('#filevalue').text() == '') {
+					$(".remove").css('display', 'none');
+				} else {
+					$(".remove").css('display', 'inline-block');
+				}
+			}
+
+	</script>
+ </body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="../resources/css/bootstrap.css">
+<script src="../resources/js/jquery-3.6.0.js"></script>
+</head>
+<body>
+<div class="container mt-3" >
+ <button class='btn btn-primary'>member-service/actuator/refresh</button>
+ <div id="refresh"></div>
+</div> 
+<hr>
+<div class="container mt-3" >
+ <button class='btn btn-info'>member-service/actuator/health</button>
+ <div id="health"></div>
+</div> 
+<hr>
+<div class="container mt-3" >
+ <button class='gateway btn btn-warning'>gateway /actuator/refresh</button>
+ <div id="gateway-refresh"></div>
+</div>
+
+<div class="container mt-3" >
+ <button class='busrefresh btn btn-warning'>member-service /actuator/busrefresh</button>
+ <div id="member-busrefresh"></div>
+</div>
+
+
+ <script>
+ 
+ //http://localhost:8000/jsp/actuator/index.html로 접근
+ 
+ //member-service의 refresh
+ $('.btn-primary').click(function(){
+   $.ajax({
+	 url:'/user/actuator/refresh',
+	 method:'post',
+	 success:function(data){
+		 console.log('/user/actuator/refresh')
+		 console.log(data)
+		 if(data.length==0){
+			 $('#refresh').text('변경된 정보가 없습니다.');
+		 }else{
+		   $('#refresh').text(data);
+		 }
+	 }
+   })
+ })
+ 
+ //member-service의 health 확인
+ $('.btn-info').click(function(){
+   $.ajax({
+	 url:'/user/actuator/health',
+	 method:'get',
+	 success:function(data){
+		 console.log('/user/actuator/health')
+		 console.log(data)
+		 if(typeof data == 'object'){
+			 let output='{';
+			 for(var p in data){
+				 output += `${p} : ${data[p]}`
+			 }
+		   $('#health').text(output + "}");
+		 }
+	 }
+   })
+ })
+ 
+ //게이트웨이의 refresh
+ $('.gateway').click(function(){
+   $.ajax({
+	 url:'/actuator/refresh',
+	 method:'post',
+	 success:function(data){
+		 console.log('/actuator/refresh')
+		 console.log(data)
+		 if(data.length==0){
+			 $('#gateway-refresh').text('변경된 정보가 없습니다.');
+		 }else{
+		   $('#gateway-refresh').text(data);
+		 }
+	 }
+   })
+ })
+ 
+ 
+ //member-service의 busrefresh
+ $('.busrefresh').click(function(){
+   $.ajax({
+	 url:'/user/actuator/busrefresh',
+	 method:'post',
+	 success:function(data){
+		 console.log('/user/actuator/busrefresh')
+		 console.log(data)
+		 if(typeof data == 'object'){
+			 let output='{';
+			 for(var p in data){
+				 output += `${p} : ${data[p]}`
+			 }
+		   $('#member-busrefresh').text(output + "}");
+		 }
+	 }
+   })
+ })
+ 
+ </script>
+</body>
+</html>
