@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?><!--  SQL 맵퍼 파일은 xml이기 때문에 제일 먼저 xml 선언이 옵니다. -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.myhome4.mybatis.mapper.BoardMapper">
+
+	<select id="getListCount" resultType="int">
+		select count(*) from board3
+	</select>
+	
+	<!-- 문법 오류 
+	   1.where  rnum >= #{start} 
+	     ==> 해결법
+	       where rnum <![CDATA[   >=   ]]> #{start}
+	       
+	       HTML 문서는 '<', '.', '>'와 같은 마크업 문자들을 파싱해서 읽어들이는 구조입니다.
+                     그래서 마크업 문자들을 원래 대로의 의미로 사용하기 위해서  '&gt;', '&lt;', '&nbsp;'등의 
+           escape 문자열(escape character)을 이용해야 하는데 문장이 
+                     길어지는 문제점이 발생하게 됩니다.이럴때 사용하는 것이 바로 CDATA(Character DATA) 절입니다.
+                     파서는 <![CDATA[ 와 ]]> 사이의 문장을 단순한 문자데이터로 인식하게 됩니다.
+       2. >  : &gt;
+          <  : &lt;
+                   바꾸어 보세요                     
+	     -->
+	<select id="getBoardList" resultType="board">
+		select * from 
+		  ( select rownum rnum, b.*
+		    from 
+		         (select board3.*, nvl(cnt,0) cnt
+                  from 
+                  board3   left outer join (select board_num, count(*) cnt
+                                           from COMMENTS3
+                                           group by board_num) c
+                  on board3.board_num = c.board_num
+                  order by BOARD_RE_REF desc, 
+                  BOARD_RE_SEQ asc     ) b
+		   ) 
+	     where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+	</select>
+	
+	<!-- 1. jdbcType=VARCHAR : 첨부 파일을 추가 하지 않은 경우 에러 처리해 줍니다.
+	                해당 필드가 null인 경우 jdbcType=VARCHAR로 처리하면 null로 설정됩니다.
+	        number 타입일 경우는 jdbcType=INTEGER 
+	    2. ① insert 전에(order="BEFORE") 
+	                 조회(select nvl(max(BOARD_NUM),0)+1 from board)합니다.
+	       ② 조회한 값을 keyProperty="BOARD_NUM"에서 설정한 대로 
+	         "BOARD_NUM" 프로퍼티에 저장합니다.
+	         (public void setBOARD_NUM(int bOARD_NUM))
+	       ③ insert문의 #{BOARD_NUM}는 지금 구한 값을 BoardBean에서가져옵니다.
+	         (public String getBOARD_NUM() {return BOARD_NUM;}) 
+	  -->
+	<insert id="insertBoard" >
+	     <selectKey resultType="int"      order="BEFORE" 
+	                keyProperty="BOARD_NUM">
+	      select nvl(max(BOARD_NUM),0)+1 from board3
+	    </selectKey>
+	    insert into board3 
+	    (BOARD_NUM, 
+	     BOARD_NAME, BOARD_PASS, BOARD_SUBJECT, 
+		 BOARD_CONTENT, BOARD_FILE, BOARD_ORIGINAL,
+		 BOARD_RE_REF, 
+		 BOARD_RE_LEV, BOARD_RE_SEQ,  BOARD_READCOUNT, 
+		 BOARD_DATE) 
+		 values
+		 (#{BOARD_NUM},
+		  #{BOARD_NAME},  #{BOARD_PASS},  #{BOARD_SUBJECT},
+		  #{BOARD_CONTENT}, #{BOARD_FILE, jdbcType=VARCHAR}, 
+		  #{BOARD_ORIGINAL, jdbcType=VARCHAR}, 
+		  #{BOARD_NUM},
+		  #{BOARD_RE_LEV}, #{BOARD_RE_SEQ}, #{BOARD_READCOUNT}, 
+		  sysdate)
+	</insert>
+	
+	<update id="setReadCountUpdate" >
+       update board3 
+       set    BOARD_READCOUNT=BOARD_READCOUNT+1 
+       where  BOARD_NUM=#{number}
+	</update>
+	
+	<select id="getDetail" resultType="board">
+	   select * 
+	   from   board3 
+	   where  BOARD_NUM=#{number}
+	</select>
+	
+	<update id="boardReplyUpdate" >
+	  update board3 
+	  set    BOARD_RE_SEQ=BOARD_RE_SEQ+1 
+	  where  BOARD_RE_REF=#{BOARD_RE_REF}
+	   	and  BOARD_RE_SEQ <![CDATA[>]]> #{BOARD_RE_SEQ}
+	</update>
+	
+	<!-- BOARD_FILE, BOARD_ORIGINAL 필드 없어요 -->
+	<insert id="boardReply" >
+	   <selectKey resultType="int" order="BEFORE" keyProperty="BOARD_NUM">
+	      select nvl(max(BOARD_NUM),0)+1 from board3
+	    </selectKey>
+	   insert into board3 
+	   (BOARD_NUM,BOARD_NAME,BOARD_PASS, BOARD_SUBJECT,
+	    BOARD_CONTENT, BOARD_RE_REF, BOARD_RE_LEV,BOARD_RE_SEQ,
+		BOARD_READCOUNT,BOARD_DATE) 
+		values(#{BOARD_NUM},
+		#{BOARD_NAME},#{BOARD_PASS},#{BOARD_SUBJECT},
+		#{BOARD_CONTENT}, #{BOARD_RE_REF},#{BOARD_RE_LEV},
+		#{BOARD_RE_SEQ},#{BOARD_READCOUNT},sysdate)
+	</insert>
+	
+	
+	
+	<delete id="boardDelete" >
+	 <![CDATA[ 
+	     delete from board3 
+			 where  BOARD_RE_REF = #{BOARD_RE_REF}
+			 and    BOARD_RE_LEV >=#{BOARD_RE_LEV}
+			 and    BOARD_RE_SEQ >=#{BOARD_RE_SEQ}
+			 and    BOARD_RE_SEQ <=(
+			                      nvl((SELECT min(board_re_seq )-1
+			                           FROM   board3  
+			                           WHERE  BOARD_RE_REF=#{BOARD_RE_REF} 
+			                           AND    BOARD_RE_LEV=#{BOARD_RE_LEV}
+			                           AND    BOARD_RE_SEQ>#{BOARD_RE_SEQ}) , 
+			                           (SELECT max(board_re_seq) 
+			                            FROM   board3  
+			                            WHERE  BOARD_RE_REF=#{BOARD_RE_REF} ))
+				                        )
+		]]>
+	</delete>
+	
+	
+	
+	<update id="boardModify" >
+	  update board3 
+	  set 
+	     BOARD_SUBJECT=#{BOARD_SUBJECT},
+	     BOARD_CONTENT=#{BOARD_CONTENT},
+	     BOARD_FILE=#{BOARD_FILE, jdbcType=VARCHAR}, 
+	     BOARD_ORIGINAL=#{BOARD_ORIGINAL, jdbcType=VARCHAR}
+	  where BOARD_NUM=#{BOARD_NUM}
+	</update>
+	
+	
+	<!-- map은 java.util.Map의 별칭입니다. -->
+	<select id="isBoardWriter" resultType="board">
+	    select * from board3 
+	    where    BOARD_NUM=#{num} 
+	    and      BOARD_PASS=#{pass}
+	</select>
+	
+	
+	
+	<select id="getDeleteFileList" resultType="String">
+	   select board_file from delete_file
+	</select>
+	
+	
+	<delete id="deleteFileList" parameterType="String">
+	  delete delete_file 
+	  where board_file=#{file_name}
+	</delete>
+	
+	
+	
+	
+	
+	
+	<!-- jUnit 테스트 용 
+	     현재 글번호를 update 후 BOARD_READCOUNT값을 가져옵니다.
+	 -->
+	<update id="readCountUpdate_test" parameterType="board">
+	     
+       update board 
+       set    BOARD_READCOUNT=BOARD_READCOUNT+1 
+       where  BOARD_NUM=#{BOARD_NUM}
+       <selectKey resultType="board"      order="AFTER" 
+	                keyProperty="BOARD_READCOUNT,BOARD_NAME">
+	      select BOARD_READCOUNT,BOARD_NAME from board where  BOARD_NUM=#{BOARD_NUM}
+	    </selectKey>
+	</update>	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>
